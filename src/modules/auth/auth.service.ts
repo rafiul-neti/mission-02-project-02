@@ -3,7 +3,7 @@ import { pool } from "../../db";
 import generateToken from "../../utils/generateToken";
 import type { IUser } from "./auth.interface";
 import bcrypt from "bcryptjs";
-import jwt, { type SignOptions } from "jsonwebtoken";
+import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
 
 const signUpUserIntoDB = async (payload: IUser) => {
   const { email, password, name, role } = payload;
@@ -81,9 +81,37 @@ const loginUserIntoDB = async (payload: {
   return { accessToken, refreshToken, user };
 };
 
-const 
+const generateNewAccessToken = async (token: string) => {
+  if (!token) {
+    throw new Error("Unauthorized access!");
+  }
+
+  const decoded = jwt.verify(token, config.jwt_refresh_secret) as JwtPayload;
+
+  const user = (
+    await pool.query(
+      `
+    SELECT id, name, email, role FROM users WHERE email=$1
+    `,
+      [decoded.email],
+    )
+  ).rows[0];
+
+  if (!user) {
+    throw new Error("User not found!");
+  }
+
+  const accessToken = generateToken(
+    user,
+    config.jwt_secret,
+    config.access_token_expires_in,
+  );
+
+  return { accessToken };
+};
 
 export const authService = {
   signUpUserIntoDB,
   loginUserIntoDB,
+  generateNewAccessToken,
 };

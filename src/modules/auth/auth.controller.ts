@@ -30,7 +30,7 @@ const loginUser = async (req: Request, res: Response) => {
       await authService.loginUserIntoDB(req.body);
 
     res.cookie("refreshToken", refreshToken, {
-      secure: false,
+      secure: false, // in production, it will be ---> true
       httpOnly: true,
       sameSite: "lax",
     });
@@ -53,9 +53,22 @@ const loginUser = async (req: Request, res: Response) => {
 
 const refreshToken = async (req: Request, res: Response) => {
   try {
-    const result = await authService.
-  } catch (error) {
-    
+    const result = await authService.generateNewAccessToken(
+      req.cookies.refreshToken,
+    );
+    sendResponse(res, {
+      statusCode: 201,
+      success: true,
+      message: "access token generation successful",
+      data: result,
+    });
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      error: error,
+    });
   }
 };
 

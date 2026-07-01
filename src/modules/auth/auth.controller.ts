@@ -32,7 +32,7 @@ const loginUser = async (req: Request, res: Response) => {
     res.cookie("refreshToken", refreshToken, {
       secure: false, // in production, it will be ---> true
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "lax", // need to go deeper into this concept
     });
 
     sendResponse(res, {

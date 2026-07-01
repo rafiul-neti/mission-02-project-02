@@ -7,6 +7,7 @@ import cors from "cors";
 import config from "./config";
 import { authRoute } from "./modules/auth/auth.route";
 import CookieParser from "cookie-parser";
+import { issuesRoute } from "./modules/issues/issues.route";
 
 const app: Application = express();
 
@@ -22,6 +23,7 @@ app.use(
 );
 
 app.use("/api/auth", authRoute);
+app.use("/api/issues", issuesRoute);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({

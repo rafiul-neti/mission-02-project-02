@@ -26,13 +26,20 @@ const signUpUser = async (req: Request, res: Response) => {
 const loginUser = async (req: Request, res: Response) => {
   try {
     // console.log(req.body);
-    const result = await authService.loginUserIntoDB(req.body);
+    const { accessToken, refreshToken, user } =
+      await authService.loginUserIntoDB(req.body);
+
+    res.cookie("refreshToken", refreshToken, {
+      secure: false,
+      httpOnly: true,
+      sameSite: "lax",
+    });
 
     sendResponse(res, {
-      statusCode: 201,
+      statusCode: 200,
       success: true,
       message: "Login successful",
-      // data: result.rows[0],
+      data: { token: accessToken, user },
     });
   } catch (error: any) {
     sendResponse(res, {
@@ -44,6 +51,16 @@ const loginUser = async (req: Request, res: Response) => {
   }
 };
 
+const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const result = await authService.
+  } catch (error) {
+    
+  }
+};
+
 export const authController = {
-  signUpUser, loginUser
+  signUpUser,
+  loginUser,
+  refreshToken,
 };

@@ -1,5 +1,6 @@
 import config from "../../config";
 import { pool } from "../../db";
+import generateToken from "../../utils/generateToken";
 import type { IUser } from "./auth.interface";
 import bcrypt from "bcryptjs";
 import jwt, { type SignOptions } from "jsonwebtoken";
@@ -49,13 +50,7 @@ const loginUserIntoDB = async (payload: {
     throw new Error("Invalid credentials!");
   }
 
-  const {
-    id,
-    name,
-    email: userEmail,
-    password: userPassword,
-    role,
-  } = isExists.rows[0];
+  const { password: userPassword, ...user } = isExists.rows[0];
   //   check if the password matches or not
   const isPassMatched = await bcrypt.compare(password, userPassword);
 
@@ -64,19 +59,29 @@ const loginUserIntoDB = async (payload: {
   }
 
   const jwtpayload = {
-    id,
-    name,
-    email: userEmail,
-    role,
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
   };
 
-  console.log(jwtpayload);
-  const accessToken = jwt.sign(jwtpayload, config.jwt_secret as string, {
-    expiresIn: (config.access_token_expires_in || "1d") as NonNullable<
-      SignOptions["expiresIn"]
-    >,
-  });
+  // console.log(user);
+  const accessToken = generateToken(
+    jwtpayload,
+    config.jwt_secret,
+    config.access_token_expires_in,
+  );
+
+  const refreshToken = generateToken(
+    jwtpayload,
+    config.jwt_refresh_secret,
+    config.refresh_token_expires_in,
+  );
+
+  return { accessToken, refreshToken, user };
 };
+
+const 
 
 export const authService = {
   signUpUserIntoDB,

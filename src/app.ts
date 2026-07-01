@@ -6,9 +6,11 @@ import express, {
 import cors from "cors";
 import config from "./config";
 import { authRoute } from "./modules/auth/auth.route";
+import CookieParser from "cookie-parser";
 
 const app: Application = express();
 
+app.use(CookieParser());
 app.use(express.json());
 app.use(express.text());
 app.use(express.urlencoded({ extended: true }));

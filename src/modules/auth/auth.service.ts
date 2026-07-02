@@ -1,9 +1,9 @@
 import config from "../../config";
 import { pool } from "../../db";
+import decodeToken from "../../utils/decodeToken";
 import generateToken from "../../utils/generateToken";
 import type { IUser } from "./auth.interface";
 import bcrypt from "bcryptjs";
-import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
 
 const signUpUserIntoDB = async (payload: IUser) => {
   const { email, password, name, role } = payload;
@@ -86,7 +86,7 @@ const generateNewAccessToken = async (token: string) => {
     throw new Error("Unauthorized access!");
   }
 
-  const decoded = jwt.verify(token, config.jwt_refresh_secret) as JwtPayload;
+  const decoded = decodeToken(token, config.jwt_refresh_secret);
 
   const user = (
     await pool.query(

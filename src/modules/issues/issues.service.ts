@@ -6,6 +6,8 @@ const attachReporters = async (issues: IIssueRow[]) => {
   const reporterIDs = issues.map((issue) => issue.reporter_id);
   const reporterIdIndex = reporterIDs.map((_, i) => `$${i + 1}`).join(", ");
 
+  console.log({ length: reporterIDs.length, reporterIdIndex });
+
   const { rows: users } = await pool.query(
     `
     SELECT id, name, role FROM users WHERE id IN(${reporterIdIndex})
@@ -89,7 +91,11 @@ const getSingleIssueFromDB = async (id: string) => {
     [id],
   );
 
-  return attachReporters(issues);
+  if (!issues.length) {
+    throw new Error("Issue not found!");
+  }
+
+  return (await attachReporters(issues))[0]!;
 };
 
 const updateIssueIntoDB = async (
@@ -134,9 +140,25 @@ const updateIssueIntoDB = async (
   return updatedIssueResult.rows[0];
 };
 
+const deleteIssueFromDB = async (role: string, issueId: string) => {
+  if (role !== USER_ROLES.maintainer) {
+    throw new Error("forbidden");
+  }
+
+  const result = await pool.query(
+    `
+    DELETE FROM issues WHERE id=$1
+    `,
+    [issueId],
+  );
+
+  return result;
+};
+
 export const issuesService = {
   createIssueIntoDB,
   getIssuesFromDB,
   getSingleIssueFromDB,
   updateIssueIntoDB,
+  deleteIssueFromDB,
 };

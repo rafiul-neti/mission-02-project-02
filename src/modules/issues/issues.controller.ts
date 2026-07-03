@@ -20,6 +20,7 @@ const createIssue = async (req: Request, res: Response) => {
       statusCode: 500,
       success: false,
       message: error.message,
+      error: error,
     });
   }
 };
@@ -39,6 +40,7 @@ const getIssues = async (req: Request, res: Response) => {
       statusCode: 500,
       success: false,
       message: error.message,
+      error: error,
     });
   }
 };
@@ -60,13 +62,14 @@ const getSingleIssue = async (req: Request, res: Response) => {
       statusCode: 500,
       success: false,
       message: error.message,
+      error: error,
     });
   }
 };
 
 const updateIssue = async (req: Request, res: Response) => {
   const { id: userId, role } = req.user as JwtPayload;
-  console.log("From controller: ", { userId, role });
+  // console.log("From controller: ", { userId, role });
   try {
     const result = await issuesService.updateIssueIntoDB(
       userId,
@@ -90,9 +93,34 @@ const updateIssue = async (req: Request, res: Response) => {
   }
 };
 
+const deleteIssue = async (req: Request, res: Response) => {
+  const { role } = req.user as JwtPayload;
+  try {
+    const result = await issuesService.deleteIssueFromDB(
+      role,
+      req.params.id as string,
+    );
+
+    console.log("from issue delete controller: ", result);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Issue deleted successfully",
+    });
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const issuesController = {
   createIssue,
   getIssues,
   getSingleIssue,
   updateIssue,
+  deleteIssue,
 };

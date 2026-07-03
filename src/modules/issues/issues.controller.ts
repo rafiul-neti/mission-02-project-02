@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import sendResponse from "../../utils/sendResponse";
 import { issuesService } from "./issues.service";
+import type { JwtPayload } from "jsonwebtoken";
 
 const createIssue = async (req: Request, res: Response) => {
   const reporter_id = req.user?.id;
@@ -63,8 +64,35 @@ const getSingleIssue = async (req: Request, res: Response) => {
   }
 };
 
+const updateIssue = async (req: Request, res: Response) => {
+  const { id: userId, role } = req.user as JwtPayload;
+  console.log("From controller: ", { userId, role });
+  try {
+    const result = await issuesService.updateIssueIntoDB(
+      userId,
+      role,
+      req.body,
+      req.params.id as string,
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Issue updated successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const issuesController = {
   createIssue,
   getIssues,
   getSingleIssue,
+  updateIssue,
 };

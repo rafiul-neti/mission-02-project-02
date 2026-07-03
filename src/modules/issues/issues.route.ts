@@ -13,5 +13,10 @@ router.post(
 
 router.get("/", issuesController.getIssues);
 router.get("/:id", issuesController.getSingleIssue);
+router.patch(
+  "/:id",
+  authorize(USER_ROLES.maintainer, USER_ROLES.contributor),
+  issuesController.updateIssue,
+);
 
 export const issuesRoute = router;

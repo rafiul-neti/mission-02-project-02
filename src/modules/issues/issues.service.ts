@@ -1,4 +1,5 @@
 import { pool } from "../../db";
+import { USER_ROLES } from "../../types";
 import type { IIssueRow, IIssues } from "./issues.interface";
 
 const attachReporters = async (issues: IIssueRow[]) => {
@@ -91,8 +92,51 @@ const getSingleIssueFromDB = async (id: string) => {
   return attachReporters(issues);
 };
 
+const updateIssueIntoDB = async (
+  userId: string,
+  role: string,
+  payload: IIssues,
+  issueId: string,
+) => {
+  const { title, description, type } = payload;
+
+  const { rows } = await pool.query(
+    `
+    SELECT * FROM issues WHERE id=$1
+    `,
+    [issueId],
+  );
+
+  if (!rows.length) {
+    throw new Error("Issue not found!");
+  }
+
+  if (role === USER_ROLES.contributor && userId !== rows[0].reporter_id) {
+    throw new Error("You are not authorized to update this issue!");
+  }
+
+  if (role === USER_ROLES.contributor && rows[0].status !== "open") {
+    throw new Error("this issue is not open to update!");
+  }
+
+  const updatedIssueResult = await pool.query(
+    `
+    UPDATE issues SET
+    title=$1,
+    description=$2,
+    type=$3
+    WHERE id=$4
+    RETURNING *
+    `,
+    [title, description, type, issueId],
+  );
+
+  return updatedIssueResult.rows[0];
+};
+
 export const issuesService = {
   createIssueIntoDB,
   getIssuesFromDB,
   getSingleIssueFromDB,
+  updateIssueIntoDB,
 };

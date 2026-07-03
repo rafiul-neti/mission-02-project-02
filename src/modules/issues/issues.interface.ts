@@ -4,3 +4,10 @@ export interface IIssues {
   type: string;
   status?: string;
 }
+
+export interface IIssueRow extends IIssues {
+  id: number,
+  reporter_id:number,
+  created_at: Date,
+  updated_at: Date
+}

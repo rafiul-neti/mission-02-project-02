@@ -4,7 +4,7 @@ import { issuesService } from "./issues.service";
 
 const createIssue = async (req: Request, res: Response) => {
   const reporter_id = req.user?.id;
-  console.log("controller: ", req.user);
+  // console.log("controller: ", req.user);
   try {
     const result = await issuesService.createIssueIntoDB(req.body, reporter_id);
 
@@ -23,6 +23,27 @@ const createIssue = async (req: Request, res: Response) => {
   }
 };
 
+const getIssues = async (req: Request, res: Response) => {
+  // console.log(req.query);
+  try {
+    const result = await issuesService.getIssuesFromDB(req.query);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Issues retrived successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const issuesController = {
   createIssue,
+  getIssues,
 };
